@@ -14,6 +14,7 @@ import LockedPage from "./pages/LockedPage";
 import PastePage from "./pages/PastePage";
 import z from "zod";
 import { validator } from "hono/validator";
+import EmptyClipboardPage from "./pages/EmptyClipboardPage";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
@@ -96,6 +97,12 @@ app.get("/paste", async (c) => {
   return c.html(PastePage());
 });
 
+app.post("/paste/remove", async (c) => {
+  await c.env.KV.delete("reg0");
+
+  return c.redirect('/paste')
+});
+
 app.post("/paste/text", validateZod(PasteTextForm), async (c) => {
   const form = c.req.valid('form');
 
@@ -160,7 +167,7 @@ app.post("/paste/file", validateZod(PasteFileForm), async (c) => {
 app.get("/", async (c) => {
   const item = await getStoredItem(c.env.KV);
   if (!item) {
-    return c.json({ success: false, error: "No item found" }, 404);
+    return c.html(EmptyClipboardPage());
   }
 
   switch (item.content.type) {
