@@ -14,18 +14,18 @@
 		{
 			"binding": "DB",
 			"database_name": "clipboard",
-			"database_id": "3f5311cf-29a0-48b5-bb39-192a016b1dc1"
+			"database_id": "YOUR DATABASE ID"
 		}
 	],
 	"kv_namespaces": [
 		{
 			"binding": "KV",
-			"id": "7e32a599c5584bb19d056278bb28b984"
+			"id": "YOUR KV ID"
 		}
 	],
 	"r2_buckets": [
 		{
-			"bucket_name": "clipboard",
+			"bucket_name": "YOUR BUCKET NAME",
 			"binding": "R2"
 		}
 	]
