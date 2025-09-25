@@ -7,6 +7,12 @@
 	"name": "clipboard",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-09-24",
+	"routes": [
+		{
+			"pattern": "YOUR CUSTOM DOMAIN",
+			"custom_domain": true
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
