@@ -1,21 +1,6 @@
-```txt
-npm install
-npm run dev
-```
+# Clipboard
+Clipboard is a minimal text/file drop and url shortener. It is meant for a single user deploying it on their own domain for personal use.
 
-```txt
-npm run deploy
-```
+The basic premise is that the user on their own device can "unlock" the website. Once it is unlocked, anyone can upload text, a url, or a file. Then, anyone can access that content on the clipboard.
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
-
-```txt
-npm run cf-typegen
-```
-
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
+It uses Cloudflare Workers, Workers KV, and R2.

@@ -16,13 +16,6 @@
 	"observability": {
 		"enabled": true
 	},
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "clipboard",
-			"database_id": "YOUR DATABASE ID"
-		}
-	],
 	"kv_namespaces": [
 		{
 			"binding": "KV",
