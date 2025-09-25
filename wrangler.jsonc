@@ -13,7 +13,26 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "clipboard",
+			"database_id": "3f5311cf-29a0-48b5-bb39-192a016b1dc1"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "7e32a599c5584bb19d056278bb28b984"
+		}
+	],
+	"r2_buckets": [
+		{
+			"bucket_name": "clipboard",
+			"binding": "R2"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
