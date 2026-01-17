@@ -1,9 +1,10 @@
+import { PageProps } from "./page_props";
 import Template from "./Template";
 
-function EmptyClipboardPage() {
+function EmptyClipboardPage({ pageProps }: { pageProps: PageProps }) {
   return (
-    <Template>
-      <h1>Your clipboard is empty</h1>
+    <Template pageProps={pageProps}>
+      <h1>This clipboard register is empty</h1>
     </Template>
   );
 }

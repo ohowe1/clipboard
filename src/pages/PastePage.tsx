@@ -1,36 +1,46 @@
+import PasteToRegister from "./components/PasteToRegister";
+import { PageProps } from "./page_props";
 import Template from "./Template";
 
-function PastePage() {
+function PastePage({
+  usedRegisters,
+  pageProps,
+}: {
+  usedRegisters: string[];
+  pageProps: PageProps;
+}) {
   return (
-    <Template>
-      <form method="post" action="/paste/remove">
-        <button type="submit">Clear Clipboard</button>
+    <Template pageProps={pageProps}>
+      <h1>Paste</h1>
+
+      <form action="/paste/page" method="post">
+        <input type="text" name="register" placeholder="Register Name"  minlength={1} required />
+        <button type="submit">Go To Paste Page</button>
       </form>
 
-      <h1>
-        Paste Text
-      </h1>
-      <form method="post" action="/paste/text">
-        <textarea name="text" rows={10} cols={50} />
-        <br />
-        <button type="submit">Paste to Clipboard</button>
-      </form>
+      <h2>Active Registers:</h2>
+      <div>
+        {usedRegisters.length === 0 ? (
+          <span>None</span>
+        ) : (
+          usedRegisters.map((reg, i) => (
+            <span key={reg}>
+              {reg === "" ? (
+                <em>Default</em>
+              ) : (
+                <a href={`/paste/${reg}`}>/{reg}</a>
+              )}
+              {i < usedRegisters.length - 1 ? ", " : ""}
+            </span>
+          ))
+        )}
+      </div>
 
-      <h1>Paste URL</h1>
-      <form method="post" action="/paste/url">
-        <input type="url" name="url" placeholder="Enter URL" />
-        <br />
-        <button type="submit">Paste URL to Clipboard</button>
-      </form>
-
-      <h1>Paste File</h1>
-      <form method="post" action="/paste/file" encType="multipart/form-data">
-        <input type="file" name="file" />
-        <br />
-        <button type="submit">Paste File to Clipboard</button>
-      </form>
+      <br />
+      <hr />
+      <PasteToRegister registerAppend={""} />
     </Template>
-  )
+  );
 }
 
 export default PastePage;

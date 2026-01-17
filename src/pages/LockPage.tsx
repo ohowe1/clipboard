@@ -1,17 +1,19 @@
-import { Context } from "hono";
+import { PageProps } from "./page_props";
 import Template from "./Template";
 
 export default function Lock({
   unlockedUntil,
   currentTime,
+  pageProps
 }: {
   unlockedUntil: number;
   currentTime: number;
+  pageProps: PageProps
 }) {
   const isLocked = !(unlockedUntil && currentTime <= unlockedUntil);
 
   return (
-    <Template>
+    <Template pageProps={pageProps}>
       <h1>Lock Clipboard</h1>
       <p>
         The clipboard is currently {isLocked

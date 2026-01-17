@@ -9,7 +9,7 @@
 	"compatibility_date": "2025-09-24",
 	"routes": [
 		{
-			"pattern": "YOUR CUSTOM DOMAIN",
+			"pattern": "your-custom-domain",
 			"custom_domain": true
 		}
 	],
@@ -19,15 +19,15 @@
 	"kv_namespaces": [
 		{
 			"binding": "KV",
-			"id": "YOUR KV ID"
+			"id": "your-kv-id"
 		}
 	],
 	"r2_buckets": [
 		{
-			"bucket_name": "YOUR BUCKET NAME",
+			"bucket_name": "your-bucket-name",
 			"binding": "R2"
 		}
-	]
+	],
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -52,7 +52,7 @@
 	 * Static Assets
 	 * https://developers.cloudflare.com/workers/static-assets/binding/
 	 */
-	// "assets": { "directory": "./public/", "binding": "ASSETS" }
+	"assets": { "directory": "./public/", "binding": "ASSETS" }
 	/**
 	 * Service Bindings (communicate between multiple Workers)
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
