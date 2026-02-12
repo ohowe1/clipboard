@@ -18,7 +18,7 @@ function PastePage({
         <button type="submit">Go To Paste Page</button>
       </form>
 
-      <h2>Active Registers:</h2>
+      <h2>Active Registers (may take up to 60 seconds to update):</h2>
       <div>
         {usedRegisters.length === 0 ? (
           <span>None</span>

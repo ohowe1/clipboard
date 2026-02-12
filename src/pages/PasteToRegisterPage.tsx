@@ -6,6 +6,7 @@ function PasteToRegisterPage({ register, pageProps }: { register: string, pagePr
   return (
     <Template pageProps={pageProps}>
       <h1>Paste to Register /{register}</h1>
+      <a href={"/paste"}>Back to Paste Page</a>
 
       <PasteToRegister registerAppend={"/" + register} />
     </Template>
