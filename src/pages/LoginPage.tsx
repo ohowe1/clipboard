@@ -1,8 +1,13 @@
-
 import { PageProps } from "./page_props";
 import Template from "./Template";
 
-export default function Login({ pageProps, message }: { pageProps: PageProps, message?: string }) {
+export default function Login({
+  pageProps,
+  message,
+}: {
+  pageProps: PageProps;
+  message?: string;
+}) {
   return (
     <Template pageProps={pageProps}>
       <h1>Login</h1>

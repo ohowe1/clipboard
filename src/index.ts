@@ -1,5 +1,12 @@
 import { Context, Hono } from "hono";
-import { LockUnlockForm, PasteTextForm, PasteURLForm, PasteFileForm, LoginForm, PastePageForm } from "./form_types";
+import {
+  LockUnlockForm,
+  PasteTextForm,
+  PasteURLForm,
+  PasteFileForm,
+  LoginForm,
+  PastePageForm,
+} from "./form_types";
 import {
   ClipboardItem,
   ContentType,
@@ -21,10 +28,13 @@ import PasteToRegisterPage from "./pages/PasteToRegisterPage";
 
 type Variables = {
   user?: string;
-}
+};
 
-const app = new Hono<{ Bindings: CloudflareBindings, Variables: Variables }>();
-export type ContextType = Context<{ Bindings: CloudflareBindings, Variables: Variables }>;
+const app = new Hono<{ Bindings: CloudflareBindings; Variables: Variables }>();
+export type ContextType = Context<{
+  Bindings: CloudflareBindings;
+  Variables: Variables;
+}>;
 
 async function getUnlockedUntil(kv: KVNamespace) {
   return parseInt((await kv.get("unlockUntil")) ?? "0");
@@ -54,7 +64,7 @@ async function removeStoredItem(register: string, kv: KVNamespace) {
 
 async function getAllRegisters(kv: KVNamespace) {
   const list = await kv.list({ prefix: "reg" });
-  
+
   const registers: string[] = [];
   for (const key of list.keys) {
     const register = key.name.substring(3); // remove "reg" prefix
@@ -65,18 +75,20 @@ async function getAllRegisters(kv: KVNamespace) {
 }
 
 function validateZod<T extends z.ZodTypeAny>(zodObject: T) {
-  return validator('form', (value, c): z.infer<T> | Response => {
+  return validator("form", (value, c): z.infer<T> | Response => {
     const parsed = zodObject.safeParse(value);
 
     if (!parsed.success) {
-      return c.text('Invalid form!', 401);
+      return c.text("Invalid form!", 401);
     }
 
     return parsed.data;
   });
 }
 
-function makePageProps(c: Context<{ Bindings: CloudflareBindings, Variables: Variables }>): PageProps {
+function makePageProps(
+  c: Context<{ Bindings: CloudflareBindings; Variables: Variables }>,
+): PageProps {
   return {
     loggedIn: !!c.get("user"),
   };
@@ -85,15 +97,15 @@ function makePageProps(c: Context<{ Bindings: CloudflareBindings, Variables: Var
 app.use(logger());
 app.use(getUserMiddleware);
 
-app.use('/secure/*', async (c, next) => {
+app.use("/secure/*", async (c, next) => {
   if (!c.get("user")) {
-    return c.redirect('/login');
+    return c.redirect("/login");
   }
   return next();
-})
+});
 
 app.use("/paste/*", async (c, next) => {
-  if (!c.get("user") && await isLocked(c.env.KV)) {
+  if (!c.get("user") && (await isLocked(c.env.KV))) {
     return c.html(LockedPage({ pageProps: makePageProps(c) }));
   }
 
@@ -109,14 +121,20 @@ app.get("/login", async (c) => {
 });
 
 app.post("/login", validateZod(LoginForm), async (c) => {
-  const form = c.req.valid('form');
+  const form = c.req.valid("form");
 
   if (form.username === c.env.USERNAME && form.password === c.env.PASSWORD) {
     await authenticate(c, form.username);
 
     return c.redirect("/secure/lock");
   } else {
-    return c.html(LoginPage({ pageProps: makePageProps(c), message: "Wrong username or password" }), 401);
+    return c.html(
+      LoginPage({
+        pageProps: makePageProps(c),
+        message: "Wrong username or password",
+      }),
+      401,
+    );
   }
 });
 
@@ -133,11 +151,13 @@ app.get("/secure/lock", async (c) => {
   const unlockedUntil = await getUnlockedUntil(c.env.KV);
   const currentTime = Date.now();
 
-  return c.html(LockPage({ unlockedUntil, currentTime, pageProps: makePageProps(c) }));
+  return c.html(
+    LockPage({ unlockedUntil, currentTime, pageProps: makePageProps(c) }),
+  );
 });
 
 app.post("/secure/lock", validateZod(LockUnlockForm), async (c) => {
-  const form = c.req.valid('form');
+  const form = c.req.valid("form");
 
   if (!form.unlock) {
     await c.env.KV.put("unlockUntil", "0");
@@ -150,7 +170,10 @@ app.post("/secure/lock", validateZod(LockUnlockForm), async (c) => {
   return c.redirect("/secure/lock");
 });
 
-function returnToPaste(c: Context<{ Bindings: CloudflareBindings, Variables: Variables }>, register: string) {
+function returnToPaste(
+  c: Context<{ Bindings: CloudflareBindings; Variables: Variables }>,
+  register: string,
+) {
   if (register === "") {
     return c.redirect(`/paste`);
   }
@@ -162,13 +185,25 @@ app.get("/paste", async (c) => {
 
   const registerContent = await getStoredItem("", c.env.KV);
 
-  return c.html(PastePage({ usedRegisters: registers, pageProps: makePageProps(c), registerContent: registerContent ?? undefined }));
+  return c.html(
+    PastePage({
+      usedRegisters: registers,
+      pageProps: makePageProps(c),
+      registerContent: registerContent ?? undefined,
+    }),
+  );
 });
 
 app.get("/paste/:reg", async (c) => {
   const registerContent = await getStoredItem(c.req.param("reg"), c.env.KV);
 
-  return c.html(PasteToRegisterPage({ register: c.req.param("reg"), registerContent: registerContent ?? undefined, pageProps: makePageProps(c) }));
+  return c.html(
+    PasteToRegisterPage({
+      register: c.req.param("reg"),
+      registerContent: registerContent ?? undefined,
+      pageProps: makePageProps(c),
+    }),
+  );
 });
 
 app.post("/paste/remove/:reg?", async (c) => {
@@ -180,16 +215,16 @@ app.post("/paste/remove/:reg?", async (c) => {
 });
 
 app.post("/paste/text/:reg?", validateZod(PasteTextForm), async (c) => {
-  const form = c.req.valid('form');
+  const form = c.req.valid("form");
 
   const clipboardItem: ClipboardItem = {
     content: {
       type: ContentType.TEXT,
-      text: form.text
-    }
+      text: form.text,
+    },
   };
 
-  console.log(c.req.param("reg"))
+  console.log(c.req.param("reg"));
   const register = c.req.param("reg") ?? "";
   await c.env.KV.put(`reg${register}`, JSON.stringify(clipboardItem));
 
@@ -197,13 +232,13 @@ app.post("/paste/text/:reg?", validateZod(PasteTextForm), async (c) => {
 });
 
 app.post("/paste/url/:reg?", validateZod(PasteURLForm), async (c) => {
-  const form = c.req.valid('form');
+  const form = c.req.valid("form");
 
   const clipboardItem: ClipboardItem = {
     content: {
       type: ContentType.URL,
-      url: form.url
-    }
+      url: form.url,
+    },
   };
 
   const register = c.req.param("reg") ?? "";
@@ -214,7 +249,7 @@ app.post("/paste/url/:reg?", validateZod(PasteURLForm), async (c) => {
 });
 
 app.post("/paste/file/:reg?", validateZod(PasteFileForm), async (c) => {
-  const form = c.req.valid('form');
+  const form = c.req.valid("form");
 
   const file = form.file as File | undefined;
   if (!file) {
@@ -247,7 +282,7 @@ app.post("/paste/file/:reg?", validateZod(PasteFileForm), async (c) => {
 });
 
 app.post("/paste/page", validateZod(PastePageForm), async (c) => {
-  const form = c.req.valid('form');
+  const form = c.req.valid("form");
 
   if (form.register.trim().length < 1) {
     return returnToPaste(c, "");
@@ -256,8 +291,10 @@ app.post("/paste/page", validateZod(PastePageForm), async (c) => {
   return returnToPaste(c, form.register);
 });
 
-async function getClipboardItem(register: string, c: Context<{ Bindings: CloudflareBindings, Variables: Variables }>) {
-
+async function getClipboardItem(
+  register: string,
+  c: Context<{ Bindings: CloudflareBindings; Variables: Variables }>,
+) {
   const item = await getStoredItem(register, c.env.KV);
   if (!item) {
     return c.html(EmptyClipboardPage({ pageProps: makePageProps(c) }));
@@ -277,7 +314,10 @@ async function getClipboardItem(register: string, c: Context<{ Bindings: Cloudfl
 
       const headers = new Headers();
       object.writeHttpMetadata(headers);
-      headers.set("Content-Disposition", `attachment; filename="${encodeURIComponent(filename)}"`);
+      headers.set(
+        "Content-Disposition",
+        `attachment; filename="${encodeURIComponent(filename)}"`,
+      );
 
       return new Response(object.body, { status: 200, headers });
     }

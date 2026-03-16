@@ -3,7 +3,7 @@ import { PageProps } from "./page_props";
 
 export default function Template({
   children,
-  pageProps
+  pageProps,
 }: PropsWithChildren<{ pageProps: PageProps }>) {
   return (
     <>

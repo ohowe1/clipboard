@@ -6,7 +6,7 @@ import Template from "./Template";
 function PastePage({
   usedRegisters,
   pageProps,
-  registerContent
+  registerContent,
 }: {
   usedRegisters: string[];
   pageProps: PageProps;
@@ -17,7 +17,13 @@ function PastePage({
       <h1>Paste</h1>
 
       <form action="/paste/page" method="post">
-        <input type="text" name="register" placeholder="Register Name"  minlength={1} required />
+        <input
+          type="text"
+          name="register"
+          placeholder="Register Name"
+          minlength={1}
+          required
+        />
         <button type="submit">Go To Paste Page</button>
       </form>
 

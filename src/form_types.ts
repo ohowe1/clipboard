@@ -12,17 +12,17 @@ export const PastePageForm = z.object({
 export type PastePageForm = z.infer<typeof PastePageForm>;
 
 export const PasteTextForm = z.object({
-  text: z.string()
+  text: z.string(),
 });
 export type PasteTextForm = z.infer<typeof PasteTextForm>;
 
 export const PasteURLForm = z.object({
-  url: z.url()
+  url: z.url(),
 });
 export type PasteURLForm = z.infer<typeof PasteURLForm>;
 
 export const PasteFileForm = z.object({
-  file: z.instanceof(File)
+  file: z.instanceof(File),
 });
 export type PasteFileForm = z.infer<typeof PasteFileForm>;
 

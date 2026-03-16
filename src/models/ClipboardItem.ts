@@ -4,7 +4,7 @@ export const ContentType = {
   FILE: "file",
   TEXT: "text",
   URL: "url",
-} as const
+} as const;
 
 export const FileContent = z.object({
   type: z.enum([ContentType.FILE]),

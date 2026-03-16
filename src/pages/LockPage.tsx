@@ -4,11 +4,11 @@ import Template from "./Template";
 export default function Lock({
   unlockedUntil,
   currentTime,
-  pageProps
+  pageProps,
 }: {
   unlockedUntil: number;
   currentTime: number;
-  pageProps: PageProps
+  pageProps: PageProps;
 }) {
   const isLocked = !(unlockedUntil && currentTime <= unlockedUntil);
 
@@ -16,11 +16,12 @@ export default function Lock({
     <Template pageProps={pageProps}>
       <h1>Lock Clipboard</h1>
       <p>
-        The clipboard is currently {isLocked
+        The clipboard is currently{" "}
+        {isLocked
           ? "locked"
           : `unlocked (${Math.max(
               0,
-              Math.ceil((unlockedUntil - currentTime) / 60000)
+              Math.ceil((unlockedUntil - currentTime) / 60000),
             )} min left)`}
         .
       </p>
