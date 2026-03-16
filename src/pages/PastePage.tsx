@@ -1,3 +1,4 @@
+import { ClipboardItem } from "../models/ClipboardItem";
 import PasteToRegister from "./components/PasteToRegister";
 import { PageProps } from "./page_props";
 import Template from "./Template";
@@ -5,9 +6,11 @@ import Template from "./Template";
 function PastePage({
   usedRegisters,
   pageProps,
+  registerContent
 }: {
   usedRegisters: string[];
   pageProps: PageProps;
+  registerContent?: ClipboardItem;
 }) {
   return (
     <Template pageProps={pageProps}>
@@ -38,7 +41,7 @@ function PastePage({
 
       <br />
       <hr />
-      <PasteToRegister registerAppend={""} />
+      <PasteToRegister registerAppend={""} currentContent={registerContent} />
     </Template>
   );
 }

@@ -159,11 +159,16 @@ function returnToPaste(c: Context<{ Bindings: CloudflareBindings, Variables: Var
 
 app.get("/paste", async (c) => {
   const registers = await getAllRegisters(c.env.KV);
-  return c.html(PastePage({ usedRegisters: registers, pageProps: makePageProps(c) }));
+
+  const registerContent = await getStoredItem("", c.env.KV);
+
+  return c.html(PastePage({ usedRegisters: registers, pageProps: makePageProps(c), registerContent: registerContent ?? undefined }));
 });
 
 app.get("/paste/:reg", async (c) => {
-  return c.html(PasteToRegisterPage({ register: c.req.param("reg"), pageProps: makePageProps(c) }));
+  const registerContent = await getStoredItem(c.req.param("reg"), c.env.KV);
+
+  return c.html(PasteToRegisterPage({ register: c.req.param("reg"), registerContent: registerContent ?? undefined, pageProps: makePageProps(c) }));
 });
 
 app.post("/paste/remove/:reg?", async (c) => {
