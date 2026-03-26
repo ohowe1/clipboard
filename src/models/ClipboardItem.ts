@@ -34,5 +34,6 @@ export type ClipboardContent = z.infer<typeof ClipboardContent>;
 
 export const ClipboardItem = z.object({
   content: ClipboardContent,
+  history: z.array(ClipboardContent).optional(),
 });
 export type ClipboardItem = z.infer<typeof ClipboardItem>;

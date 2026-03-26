@@ -4,7 +4,7 @@ import { PageProps } from "./page_props";
 import Template from "./Template";
 
 function PasteToRegisterPage({
-  register,
+  register: registerAppend,
   registerContent,
   pageProps,
 }: {
@@ -14,11 +14,11 @@ function PasteToRegisterPage({
 }) {
   return (
     <Template pageProps={pageProps}>
-      <h1>Paste to Register /{register}</h1>
+      <h1>Paste to Register {registerAppend}</h1>
       <a href={"/paste"}>Back to Paste Page</a>
 
       <PasteToRegister
-        registerAppend={"/" + register}
+        registerAppend={registerAppend}
         currentContent={registerContent}
       />
     </Template>

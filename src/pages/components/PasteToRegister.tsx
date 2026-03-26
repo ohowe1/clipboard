@@ -1,4 +1,5 @@
 import { ClipboardItem } from "../../models/ClipboardItem";
+import RegisterContent from "./RegisterContent";
 
 function PasteToRegister({
   registerAppend,
@@ -9,67 +10,14 @@ function PasteToRegister({
 }) {
   return (
     <>
-      <div>
-        <h2>Current Contents</h2>
-      </div>
-      {currentContent ? (
-        <div
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            padding: "12px",
-            background: "#fafbfc",
-            maxWidth: "600px",
-            marginBottom: "1em",
-          }}
-        >
-          {currentContent.content.type === "text" && (
-            <div>
-              <strong>Text:</strong>
-              <div
-                style={{
-                  marginTop: "6px",
-                  maxHeight: "200px",
-                  overflowY: "auto",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
-              >
-                {currentContent.content.text}
-              </div>
-            </div>
-          )}
-          {currentContent.content.type === "url" && (
-            <div>
-              <strong>URL: </strong>
-              <a
-                href={currentContent.content.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {currentContent.content.url}
-              </a>
-            </div>
-          )}
-          {currentContent.content.type === "file" && (
-            <div>
-              <strong>File: </strong>
-              <a
-                href={registerAppend}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {currentContent.content.file_name}
-              </a>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p>Register is empty</p>
-      )}
+      <h2>Current Contents (<a href={`/paste/history${registerAppend}`}>History</a>)</h2>
+      <RegisterContent
+        registerContent={currentContent?.content}
+        registerAppend={registerAppend}
+      />
 
       <form method="post" action={`/paste/remove${registerAppend}`}>
-        <button type="submit">Clear Register</button>
+        <button type="submit">Clear Register (and history)</button>
       </form>
       <hr />
 

@@ -8,7 +8,6 @@ import {
   PastePageForm,
 } from "./form_types";
 import {
-  ClipboardItem,
   ContentType,
   FileContent,
   TextContent,
@@ -25,6 +24,8 @@ import LoginPage from "./pages/LoginPage";
 import { authenticate, getUserMiddleware, logout } from "./middleware/auth";
 import { PageProps } from "./pages/page_props";
 import PasteToRegisterPage from "./pages/PasteToRegisterPage";
+import HistoryPage from "./pages/HistoryPage";
+import { getAllRegisters, getStoredItem, getUnlockedUntil, isLocked, removeStoredItem, storeContent } from "./controller";
 
 type Variables = {
   user?: string;
@@ -35,44 +36,6 @@ export type ContextType = Context<{
   Bindings: CloudflareBindings;
   Variables: Variables;
 }>;
-
-async function getUnlockedUntil(kv: KVNamespace) {
-  return parseInt((await kv.get("unlockUntil")) ?? "0");
-}
-
-async function isLocked(kv: KVNamespace) {
-  return Date.now() > (await getUnlockedUntil(kv));
-}
-
-async function getStoredItem(register: string, kv: KVNamespace) {
-  const item = await kv.get(`reg${register}`);
-  if (!item) {
-    return null;
-  }
-
-  const parsed = ClipboardItem.safeParse(JSON.parse(item));
-  if (!parsed.success) {
-    return null;
-  }
-
-  return parsed.data;
-}
-
-async function removeStoredItem(register: string, kv: KVNamespace) {
-  await kv.delete(`reg${register}`);
-}
-
-async function getAllRegisters(kv: KVNamespace) {
-  const list = await kv.list({ prefix: "reg" });
-
-  const registers: string[] = [];
-  for (const key of list.keys) {
-    const register = key.name.substring(3); // remove "reg" prefix
-    registers.push(register);
-  }
-
-  return registers;
-}
 
 function validateZod<T extends z.ZodTypeAny>(zodObject: T) {
   return validator("form", (value, c): z.infer<T> | Response => {
@@ -194,13 +157,40 @@ app.get("/paste", async (c) => {
   );
 });
 
+
+app.get("/paste/history", async (c) => {
+  const register = "";
+  const item = await getStoredItem(register, c.env.KV);
+
+  return c.html(
+    HistoryPage({
+      register,
+      registerItem: item ?? undefined,
+      pageProps: makePageProps(c),
+    }),
+  );
+});
+
 app.get("/paste/:reg", async (c) => {
   const registerContent = await getStoredItem(c.req.param("reg"), c.env.KV);
 
   return c.html(
     PasteToRegisterPage({
-      register: c.req.param("reg"),
+      register: "/" + c.req.param("reg"),
       registerContent: registerContent ?? undefined,
+      pageProps: makePageProps(c),
+    }),
+  );
+});
+
+app.get("/paste/history/:reg", async (c) => {
+  const register = c.req.param("reg");
+  const item = await getStoredItem(register, c.env.KV);
+
+  return c.html(
+    HistoryPage({
+      register: "/" + register,
+      registerItem: item ?? undefined,
       pageProps: makePageProps(c),
     }),
   );
@@ -209,7 +199,7 @@ app.get("/paste/:reg", async (c) => {
 app.post("/paste/remove/:reg?", async (c) => {
   const register = c.req.param("reg") ?? "";
 
-  await removeStoredItem(register, c.env.KV);
+  await removeStoredItem(register, c.env.KV, c.env.R2);
 
   return returnToPaste(c, register);
 });
@@ -217,16 +207,13 @@ app.post("/paste/remove/:reg?", async (c) => {
 app.post("/paste/text/:reg?", validateZod(PasteTextForm), async (c) => {
   const form = c.req.valid("form");
 
-  const clipboardItem: ClipboardItem = {
-    content: {
-      type: ContentType.TEXT,
-      text: form.text,
-    },
+  const content: TextContent = {
+    type: ContentType.TEXT,
+    text: form.text,
   };
 
-  console.log(c.req.param("reg"));
   const register = c.req.param("reg") ?? "";
-  await c.env.KV.put(`reg${register}`, JSON.stringify(clipboardItem));
+  await storeContent(register, content, c.env.KV);
 
   return returnToPaste(c, register);
 });
@@ -234,16 +221,14 @@ app.post("/paste/text/:reg?", validateZod(PasteTextForm), async (c) => {
 app.post("/paste/url/:reg?", validateZod(PasteURLForm), async (c) => {
   const form = c.req.valid("form");
 
-  const clipboardItem: ClipboardItem = {
-    content: {
-      type: ContentType.URL,
-      url: form.url,
-    },
+  const content: URLContent = {
+    type: ContentType.URL,
+    url: form.url,
   };
 
   const register = c.req.param("reg") ?? "";
 
-  await c.env.KV.put(`reg${register}`, JSON.stringify(clipboardItem));
+  await storeContent(register, content, c.env.KV);
 
   return returnToPaste(c, register);
 });
@@ -258,7 +243,7 @@ app.post("/paste/file/:reg?", validateZod(PasteFileForm), async (c) => {
 
   const register = c.req.param("reg") ?? "";
 
-  const key = `reg${register}`;
+  const key = `reg${register}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
   const data = await file.arrayBuffer();
 
@@ -268,15 +253,13 @@ app.post("/paste/file/:reg?", validateZod(PasteFileForm), async (c) => {
     },
   });
 
-  const clipboardItem: ClipboardItem = {
-    content: {
-      type: ContentType.FILE,
-      bucket_key: key,
-      file_name: file.name,
-    },
+  const content: FileContent = {
+    type: ContentType.FILE,
+    bucket_key: key,
+    file_name: file.name,
   };
 
-  await c.env.KV.put(key, JSON.stringify(clipboardItem));
+  await storeContent(register, content, c.env.KV);
 
   return returnToPaste(c, register);
 });
