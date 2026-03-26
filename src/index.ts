@@ -25,7 +25,14 @@ import { authenticate, getUserMiddleware, logout } from "./middleware/auth";
 import { PageProps } from "./pages/page_props";
 import PasteToRegisterPage from "./pages/PasteToRegisterPage";
 import HistoryPage from "./pages/HistoryPage";
-import { getAllRegisters, getStoredItem, getUnlockedUntil, isLocked, removeStoredItem, storeContent } from "./controller";
+import {
+  getAllRegisters,
+  getStoredItem,
+  getUnlockedUntil,
+  isLocked,
+  removeStoredItem,
+  storeContent,
+} from "./controller";
 
 type Variables = {
   user?: string;
@@ -156,7 +163,6 @@ app.get("/paste", async (c) => {
     }),
   );
 });
-
 
 app.get("/paste/history", async (c) => {
   const register = "";

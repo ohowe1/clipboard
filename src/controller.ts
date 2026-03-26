@@ -22,21 +22,33 @@ export async function getStoredItem(register: string, kv: KVNamespace) {
   return parsed.data;
 }
 
-export async function storeContent(register: string, content: ClipboardContent, kv: KVNamespace) {
+export async function storeContent(
+  register: string,
+  content: ClipboardContent,
+  kv: KVNamespace,
+) {
   const existingItem = await getStoredItem(register, kv);
 
   const newItem: ClipboardItem = {
     content,
-    history: existingItem ? [existingItem.content, ...(existingItem.history ?? [])] : [],
+    history: existingItem
+      ? [existingItem.content, ...(existingItem.history ?? [])]
+      : [],
   };
 
   await kv.put(`reg${register}`, JSON.stringify(newItem));
 }
 
-export async function removeStoredItem(register: string, kv: KVNamespace, r2: R2Bucket) {
+export async function removeStoredItem(
+  register: string,
+  kv: KVNamespace,
+  r2: R2Bucket,
+) {
   const existingItem = await getStoredItem(register, kv);
 
-  const allContent = existingItem ? [existingItem.content, ...(existingItem.history ?? [])] : [];
+  const allContent = existingItem
+    ? [existingItem.content, ...(existingItem.history ?? [])]
+    : [];
 
   for (const content of allContent) {
     if (content.type === "file") {

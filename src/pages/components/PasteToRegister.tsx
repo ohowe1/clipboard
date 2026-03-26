@@ -10,7 +10,10 @@ function PasteToRegister({
 }) {
   return (
     <>
-      <h2>Current Contents (<a href={`/paste/history${registerAppend}`}>History</a>)</h2>
+      <h2>
+        Current Contents (
+        <a href={`/paste/history${registerAppend}`}>History</a>)
+      </h2>
       <RegisterContent
         registerContent={currentContent?.content}
         registerAppend={registerAppend}
