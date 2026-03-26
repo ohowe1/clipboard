@@ -28,7 +28,7 @@ function HistoryPage({
           <h3>Current Element</h3>
           <RegisterContent
             registerContent={registerItem.content}
-            registerAppend={`/${registerAppend}`}
+            registerAppend={`${registerAppend}`}
           />
         </div>
 
@@ -37,7 +37,7 @@ function HistoryPage({
             <h3>History {i + 1}</h3>
             <RegisterContent
               registerContent={content}
-              registerAppend={`/${registerAppend}`}
+              registerAppend={`${registerAppend}`}
             />
           </div>
         ))}
