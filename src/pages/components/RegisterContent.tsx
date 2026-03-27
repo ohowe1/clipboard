@@ -46,7 +46,11 @@ function FileContent({
   return (
     <div>
       <strong>File: </strong>
-      <a href={`/paste/get_file/${register}/${fileNumber}`} target="_blank" rel="noopener noreferrer">
+      <a
+        href={`/paste/get_file/${register}/${fileNumber}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         {fileContent.file_name}
       </a>
     </div>

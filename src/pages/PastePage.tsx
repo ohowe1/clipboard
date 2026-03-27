@@ -47,10 +47,7 @@ function PastePage({
 
       <br />
       <hr />
-      <PasteToRegister
-        register={"default"}
-        currentContent={registerContent}
-      />
+      <PasteToRegister register={"default"} currentContent={registerContent} />
     </Template>
   );
 }

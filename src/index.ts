@@ -65,10 +65,7 @@ function makePageProps(
   };
 }
 
-async function downloadFileResponse(
-  filename: string,
-  object: R2ObjectBody
-) {
+async function downloadFileResponse(filename: string, object: R2ObjectBody) {
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set(
@@ -178,7 +175,6 @@ app.get("/paste", async (c) => {
     }),
   );
 });
-
 
 app.get("/paste/history/:reg", async (c) => {
   const register = c.req.param("reg");

@@ -17,10 +17,7 @@ function PasteToRegisterPage({
       <h1>Paste to Register {register}</h1>
       <a href={"/paste"}>Back to Default Paste Page</a>
 
-      <PasteToRegister
-        register={register}
-        currentContent={registerContent}
-      />
+      <PasteToRegister register={register} currentContent={registerContent} />
     </Template>
   );
 }
