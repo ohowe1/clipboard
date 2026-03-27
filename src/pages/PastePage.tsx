@@ -34,7 +34,7 @@ function PastePage({
         ) : (
           usedRegisters.map((reg, i) => (
             <span key={reg}>
-              {reg === "" ? (
+              {reg === "default" ? (
                 <em>Default</em>
               ) : (
                 <a href={`/paste/${reg}`}>/{reg}</a>
@@ -47,7 +47,10 @@ function PastePage({
 
       <br />
       <hr />
-      <PasteToRegister registerAppend={""} currentContent={registerContent} />
+      <PasteToRegister
+        register={"default"}
+        currentContent={registerContent}
+      />
     </Template>
   );
 }

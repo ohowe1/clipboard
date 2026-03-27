@@ -36,15 +36,17 @@ function URLContent({
 
 function FileContent({
   fileContent,
-  registerAppend,
+  register,
+  fileNumber,
 }: {
   fileContent: Extract<ClipboardContent, { type: "file" }>;
-  registerAppend: string;
+  register: string;
+  fileNumber: number;
 }) {
   return (
     <div>
       <strong>File: </strong>
-      <a href={registerAppend} target="_blank" rel="noopener noreferrer">
+      <a href={`/paste/get_file/${register}/${fileNumber}`} target="_blank" rel="noopener noreferrer">
         {fileContent.file_name}
       </a>
     </div>
@@ -53,10 +55,12 @@ function FileContent({
 
 function RegisterContent({
   registerContent,
-  registerAppend,
+  register,
+  fileNumber = -1,
 }: {
   registerContent?: ClipboardContent;
-  registerAppend: string;
+  register: string;
+  fileNumber?: number;
 }) {
   return (
     <div
@@ -79,7 +83,8 @@ function RegisterContent({
           {registerContent.type === "file" && (
             <FileContent
               fileContent={registerContent}
-              registerAppend={registerAppend}
+              register={register}
+              fileNumber={fileNumber}
             />
           )}
         </>

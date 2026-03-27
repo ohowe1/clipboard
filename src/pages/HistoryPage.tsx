@@ -5,10 +5,12 @@ import { PageProps } from "./page_props";
 import Template from "./Template";
 
 function HistoryPage({
-  register: registerAppend,
+  pastePage,
+  register,
   registerItem,
   pageProps,
 }: {
+  pastePage: string;
   register: string;
   registerItem?: ClipboardItem;
   pageProps: PageProps;
@@ -28,7 +30,7 @@ function HistoryPage({
           <h3>Current Element</h3>
           <RegisterContent
             registerContent={registerItem.content}
-            registerAppend={`${registerAppend}`}
+            register={register}
           />
         </div>
 
@@ -37,7 +39,8 @@ function HistoryPage({
             <h3>History {i + 1}</h3>
             <RegisterContent
               registerContent={content}
-              registerAppend={`${registerAppend}`}
+              register={register}
+              fileNumber={i}
             />
           </div>
         ))}
@@ -46,8 +49,8 @@ function HistoryPage({
   }
   return (
     <Template pageProps={pageProps}>
-      <h1>History for Register {registerAppend}</h1>
-      <a href={`/paste${registerAppend}`}>Back to Register Page</a>
+      <h1>History for Register {register}</h1>
+      <a href={pastePage}>Back to Register Page</a>
 
       {content}
     </Template>

@@ -8,6 +8,7 @@ import {
   PastePageForm,
 } from "./form_types";
 import {
+  ClipboardItem,
   ContentType,
   FileContent,
   TextContent,
@@ -62,6 +63,20 @@ function makePageProps(
   return {
     loggedIn: !!c.get("user"),
   };
+}
+
+async function downloadFileResponse(
+  filename: string,
+  object: R2ObjectBody
+) {
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set(
+    "Content-Disposition",
+    `attachment; filename="${encodeURIComponent(filename)}"`,
+  );
+
+  return new Response(object.body, { status: 200, headers });
 }
 
 app.use(logger());
@@ -144,7 +159,7 @@ function returnToPaste(
   c: Context<{ Bindings: CloudflareBindings; Variables: Variables }>,
   register: string,
 ) {
-  if (register === "") {
+  if (register === "default") {
     return c.redirect(`/paste`);
   }
   return c.redirect(`/paste/${register}`);
@@ -153,7 +168,7 @@ function returnToPaste(
 app.get("/paste", async (c) => {
   const registers = await getAllRegisters(c.env.KV);
 
-  const registerContent = await getStoredItem("", c.env.KV);
+  const registerContent = await getStoredItem("default", c.env.KV);
 
   return c.html(
     PastePage({
@@ -164,30 +179,6 @@ app.get("/paste", async (c) => {
   );
 });
 
-app.get("/paste/history", async (c) => {
-  const register = "";
-  const item = await getStoredItem(register, c.env.KV);
-
-  return c.html(
-    HistoryPage({
-      register,
-      registerItem: item ?? undefined,
-      pageProps: makePageProps(c),
-    }),
-  );
-});
-
-app.get("/paste/:reg", async (c) => {
-  const registerContent = await getStoredItem(c.req.param("reg"), c.env.KV);
-
-  return c.html(
-    PasteToRegisterPage({
-      register: "/" + c.req.param("reg"),
-      registerContent: registerContent ?? undefined,
-      pageProps: makePageProps(c),
-    }),
-  );
-});
 
 app.get("/paste/history/:reg", async (c) => {
   const register = c.req.param("reg");
@@ -195,22 +186,23 @@ app.get("/paste/history/:reg", async (c) => {
 
   return c.html(
     HistoryPage({
-      register: "/" + register,
+      pastePage: register === "default" ? "/paste" : `/paste/${register}`,
+      register: register,
       registerItem: item ?? undefined,
       pageProps: makePageProps(c),
     }),
   );
 });
 
-app.post("/paste/remove/:reg?", async (c) => {
-  const register = c.req.param("reg") ?? "";
+app.post("/paste/remove/:reg", async (c) => {
+  const register = c.req.param("reg");
 
   await removeStoredItem(register, c.env.KV, c.env.R2);
 
   return returnToPaste(c, register);
 });
 
-app.post("/paste/text/:reg?", validateZod(PasteTextForm), async (c) => {
+app.post("/paste/text/:reg", validateZod(PasteTextForm), async (c) => {
   const form = c.req.valid("form");
 
   const content: TextContent = {
@@ -218,13 +210,13 @@ app.post("/paste/text/:reg?", validateZod(PasteTextForm), async (c) => {
     text: form.text,
   };
 
-  const register = c.req.param("reg") ?? "";
+  const register = c.req.param("reg");
   await storeContent(register, content, c.env.KV);
 
   return returnToPaste(c, register);
 });
 
-app.post("/paste/url/:reg?", validateZod(PasteURLForm), async (c) => {
+app.post("/paste/url/:reg", validateZod(PasteURLForm), async (c) => {
   const form = c.req.valid("form");
 
   const content: URLContent = {
@@ -232,14 +224,14 @@ app.post("/paste/url/:reg?", validateZod(PasteURLForm), async (c) => {
     url: form.url,
   };
 
-  const register = c.req.param("reg") ?? "";
+  const register = c.req.param("reg");
 
   await storeContent(register, content, c.env.KV);
 
   return returnToPaste(c, register);
 });
 
-app.post("/paste/file/:reg?", validateZod(PasteFileForm), async (c) => {
+app.post("/paste/file/:reg", validateZod(PasteFileForm), async (c) => {
   const form = c.req.valid("form");
 
   const file = form.file as File | undefined;
@@ -247,7 +239,7 @@ app.post("/paste/file/:reg?", validateZod(PasteFileForm), async (c) => {
     return c.text("No file uploaded", 400);
   }
 
-  const register = c.req.param("reg") ?? "";
+  const register = c.req.param("reg");
 
   const key = `reg${register}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
@@ -274,10 +266,46 @@ app.post("/paste/page", validateZod(PastePageForm), async (c) => {
   const form = c.req.valid("form");
 
   if (form.register.trim().length < 1) {
-    return returnToPaste(c, "");
+    return returnToPaste(c, "default");
   }
 
   return returnToPaste(c, form.register);
+});
+
+app.get("/paste/:reg", async (c) => {
+  const registerContent = await getStoredItem(c.req.param("reg"), c.env.KV);
+
+  return c.html(
+    PasteToRegisterPage({
+      register: c.req.param("reg"),
+      registerContent: registerContent ?? undefined,
+      pageProps: makePageProps(c),
+    }),
+  );
+});
+
+app.get("/paste/get_file/:reg/:num", async (c) => {
+  const register = c.req.param("reg");
+  const num = parseInt(c.req.param("num"));
+
+  const item = await getStoredItem(register, c.env.KV);
+
+  if (!item) {
+    return c.text("File not found", 404);
+  }
+
+  const content = num == -1 ? item.content : item.history?.[num];
+  if (!content || content.type !== ContentType.FILE) {
+    return c.text("File not found", 404);
+  }
+
+  const key = content.bucket_key;
+  const object = await c.env.R2.get(key);
+  if (!object) {
+    return c.text("File not found", 404);
+  }
+
+  return downloadFileResponse(content.file_name, object);
 });
 
 async function getClipboardItem(
@@ -294,21 +322,13 @@ async function getClipboardItem(
       const fileContent = item.content as FileContent;
 
       const key = fileContent.bucket_key;
+
       const object = await c.env.R2.get(key);
       if (!object) {
         return c.text("File not found", 404);
       }
 
-      const filename = fileContent.file_name;
-
-      const headers = new Headers();
-      object.writeHttpMetadata(headers);
-      headers.set(
-        "Content-Disposition",
-        `attachment; filename="${encodeURIComponent(filename)}"`,
-      );
-
-      return new Response(object.body, { status: 200, headers });
+      return downloadFileResponse(fileContent.file_name, object);
     }
     case ContentType.TEXT: {
       const textContent = item.content as TextContent;
@@ -333,7 +353,7 @@ app.get("/:register", async (c) => {
 });
 
 app.get("/", async (c) => {
-  return getClipboardItem("", c);
+  return getClipboardItem("default", c);
 });
 
 export default app;
