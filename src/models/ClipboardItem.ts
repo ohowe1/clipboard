@@ -10,6 +10,7 @@ export const FileContent = z.object({
   type: z.enum([ContentType.FILE]),
   bucket_key: z.string(),
   file_name: z.string(),
+  is_view: z.boolean().optional(),
 });
 export type FileContent = z.infer<typeof FileContent>;
 

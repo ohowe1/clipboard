@@ -23,6 +23,7 @@ export type PasteURLForm = z.infer<typeof PasteURLForm>;
 
 export const PasteFileForm = z.object({
   file: z.instanceof(File),
+  is_view: z.string().optional(),
 });
 export type PasteFileForm = z.infer<typeof PasteFileForm>;
 

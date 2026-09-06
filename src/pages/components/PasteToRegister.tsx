@@ -44,6 +44,7 @@ function PasteToRegister({
         encType="multipart/form-data"
       >
         <input type="file" name="file" />
+        <input type="checkbox" name="is_view" /> View
         <br />
         <button type="submit">Paste File to Register</button>
       </form>

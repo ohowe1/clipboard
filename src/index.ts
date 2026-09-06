@@ -76,6 +76,17 @@ async function downloadFileResponse(filename: string, object: R2ObjectBody) {
   return new Response(object.body, { status: 200, headers });
 }
 
+async function viewFileResponse(filename: string, object: R2ObjectBody) {
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set(
+    "Content-Disposition",
+    `inline; filename="${encodeURIComponent(filename)}"`,
+  );
+
+  return new Response(object.body, { status: 200, headers });
+}
+
 app.use(logger());
 app.use(getUserMiddleware);
 
@@ -251,6 +262,7 @@ app.post("/paste/file/:reg", validateZod(PasteFileForm), async (c) => {
     type: ContentType.FILE,
     bucket_key: key,
     file_name: file.name,
+    is_view: form.is_view === "on",
   };
 
   await storeContent(register, content, c.env.KV);
@@ -301,6 +313,9 @@ app.get("/paste/get_file/:reg/:num", async (c) => {
     return c.text("File not found", 404);
   }
 
+  if (content.is_view) {
+    return viewFileResponse(content.file_name, object);
+  }
   return downloadFileResponse(content.file_name, object);
 });
 
@@ -324,6 +339,9 @@ async function getClipboardItem(
         return c.text("File not found", 404);
       }
 
+      if (fileContent.is_view) {
+        return viewFileResponse(fileContent.file_name, object);
+      }
       return downloadFileResponse(fileContent.file_name, object);
     }
     case ContentType.TEXT: {
