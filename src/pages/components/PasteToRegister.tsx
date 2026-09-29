@@ -1,4 +1,5 @@
 import { ClipboardItem } from "../../models/ClipboardItem";
+import QRCode from "./QRCode";
 import RegisterContent from "./RegisterContent";
 
 function PasteToRegister({
@@ -18,9 +19,14 @@ function PasteToRegister({
         register={register}
       />
 
-      <form method="post" action={`/paste/remove/${register}`}>
-        <button type="submit">Clear Register (and history)</button>
-      </form>
+      {currentContent && (
+        <>
+          <QRCode register={register} />
+          <form method="post" action={`/paste/remove/${register}`}>
+            <button type="submit">Clear Register (and history)</button>
+          </form>
+        </>
+      )}
       <hr />
 
       <h2>Paste Text</h2>
